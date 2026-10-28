@@ -15,7 +15,9 @@ public class Earthquake : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        Debug.Log(rb);
         originalPosition = rb.position;
+        
     }
 
     public void StartEarthquake()
@@ -26,10 +28,12 @@ public class Earthquake : MonoBehaviour
     public void FixedUpdate()
     {
         if (!isShaking) return;
+        Debug.Log("Earthquake is shaking!");
 
-        if(isMovingRight)
+        if (isMovingRight)
         {
             rb.MovePosition(rb.position + Vector2.right * speed * Time.fixedDeltaTime);
+            Debug.Log("Moving right: " + rb.position.x);
             if (rb.position.x >= originalPosition.x + distance)
             {
                 isMovingRight = false;
@@ -38,6 +42,7 @@ public class Earthquake : MonoBehaviour
         else
         {
             rb.MovePosition(rb.position + Vector2.left * speed * Time.fixedDeltaTime);
+            Debug.Log("Moving left: " + rb.position.x);
             if (rb.position.x <= originalPosition.x - distance)
             {
                 isMovingRight = true;
