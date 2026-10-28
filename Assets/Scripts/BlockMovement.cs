@@ -42,7 +42,7 @@ public class BlockMovement : MonoBehaviour
         {
             Collider2D hit = Physics2D.OverlapPoint(mousePosition);
 
-            if (hit != null && hit.gameObject == gameObject && gameObject.tag == "Block")
+            if (hit != null && hit.transform.root == transform.root && transform.root.CompareTag("Block"))
             {
                 isDragging = true;
                 offset = transform.position - mousePosition;
