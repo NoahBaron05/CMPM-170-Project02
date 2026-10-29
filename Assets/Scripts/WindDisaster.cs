@@ -11,6 +11,17 @@ public class WindDisaster : MonoBehaviour
 
     public void StartWind()
     {
+        if (blocks == null || blocks.Length == 0)
+        {
+            GameObject[] blockObjects = GameObject.FindGameObjectsWithTag("Block");
+            blocks = new Rigidbody2D[blockObjects.Length];
+
+            for (int i = 0; i < blockObjects.Length; i++)
+            {
+                blocks[i] = blockObjects[i].GetComponent<Rigidbody2D>();
+            }
+        }
+
         isWindActive = true;
 
         windDirection = Random.value < 0.5f

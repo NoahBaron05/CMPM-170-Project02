@@ -5,17 +5,19 @@ using TMPro;
 
 public class DisasterManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     public static DisasterManager instance;
     public static DisasterManager Instance { get { return instance; } }
 
     [SerializeField] private Earthquake earthquake;
+    [SerializeField] private WindDisaster windDisaster;
     [SerializeField] private HailDisaster hailDisaster;
-    [SerializeField] private Button hailButton;
-    [SerializeField] private TMP_Text hailButtonLabel;
+    [SerializeField] private Button disasterButton;
 
     [SerializeField] private float duration;
     private bool isDisasterRunning;
+    private Button[] disasterButtons;
+    private TMP_Text[] disasterLabels;
+    private readonly string[] disasterNames = { "Earthquake", "Wind", "Hail" };
 
     public void Awake()
     {
@@ -29,79 +31,124 @@ public class DisasterManager : MonoBehaviour
         }
     }
 
-    public void NaturalDisasterBegin()
+    private void Start()
     {
-        if (isDisasterRunning) return;
+        if (disasterButton == null)
+        {
+            Debug.LogError("Disaster UI could not start because no button is assigned.");
+            return;
+        }
 
-        DisasterType disasterType = (DisasterType)Random.Range(0, 3);
+        disasterButtons = new Button[3];
+        disasterLabels = new TMP_Text[3];
+        disasterButtons[0] = disasterButton;
 
-        StartCoroutine(StartDisaster(disasterType));
+        for (int i = 1; i < disasterButtons.Length; i++)
+        {
+            disasterButtons[i] = Instantiate(disasterButton, disasterButton.transform.parent, false);
+        }
+
+        for (int i = 0; i < disasterButtons.Length; i++)
+        {
+            Button button = disasterButtons[i];
+            button.name = $"{disasterNames[i]} Button";
+            RectTransform rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(20f, -20f - i * 45f);
+            rect.sizeDelta = new Vector2(160f, 38f);
+
+            TMP_Text label = button.GetComponentInChildren<TMP_Text>();
+            if (label == null)
+            {
+                Debug.LogError("Disaster UI button is missing its TextMeshPro label.");
+                return;
+            }
+
+            disasterLabels[i] = label;
+            label.text = disasterNames[i];
+            int buttonIndex = i;
+            button.onClick.AddListener(() => StartSelectedDisaster((DisasterType)buttonIndex));
+        }
     }
 
-    public void StartHailDisaster()
+    private void StartSelectedDisaster(DisasterType disasterType)
     {
-        if (isDisasterRunning) return;
-
-        StartCoroutine(StartDisaster(DisasterType.Hail));
+        if (!isDisasterRunning)
+        {
+            StartCoroutine(StartDisaster(disasterType));
+        }
     }
 
-    public IEnumerator StartDisaster(DisasterType disasterType)
+    private IEnumerator StartDisaster(DisasterType disasterType)
     {
-        if (isDisasterRunning) yield break;
+        if (!HasDisaster(disasterType)) yield break;
 
         isDisasterRunning = true;
-        SetHailButtonState(true, disasterType);
+        SetDisasterButtons(false, disasterType);
 
         switch (disasterType)
         {
             case DisasterType.Earthquake:
                 Debug.Log("Earthquake disaster started!");
                 earthquake.StartEarthquake();
-                yield return new WaitForSeconds(duration);
-                earthquake.StopEarthquake();
-
                 break;
             case DisasterType.Wind:
                 Debug.Log("Wind disaster started!");
-                // Implement wind disaster logic here
+                windDisaster.StartWind();
                 break;
-
             case DisasterType.Hail:
                 Debug.Log("Hail disaster started!");
-                if (hailDisaster == null)
-                {
-                    Debug.LogError("Hail disaster could not start because no HailDisaster component is assigned.");
-                    isDisasterRunning = false;
-                    SetHailButtonState(false, disasterType);
-                    yield break;
-                }
-
                 hailDisaster.StartHail();
-                yield return new WaitForSeconds(duration);
+                break;
+        }
+
+        yield return new WaitForSeconds(duration);
+
+        switch (disasterType)
+        {
+            case DisasterType.Earthquake:
+                earthquake.StopEarthquake();
+                break;
+            case DisasterType.Wind:
+                windDisaster.StopWind();
+                break;
+            case DisasterType.Hail:
                 hailDisaster.StopHail();
                 break;
         }
 
         isDisasterRunning = false;
-        SetHailButtonState(false, disasterType);
+        SetDisasterButtons(true, disasterType);
     }
 
-    private void SetHailButtonState(bool isRunning, DisasterType disasterType)
+    private bool HasDisaster(DisasterType disasterType)
     {
-        if (hailButton != null)
+        bool isAvailable = disasterType switch
         {
-            hailButton.interactable = !isRunning;
+            DisasterType.Earthquake => earthquake != null,
+            DisasterType.Wind => windDisaster != null,
+            DisasterType.Hail => hailDisaster != null,
+            _ => false
+        };
+
+        if (!isAvailable)
+        {
+            Debug.LogError($"{disasterType} disaster is not assigned in the Inspector.");
         }
 
-        if (hailButtonLabel != null)
-        {
-            hailButtonLabel.text = isRunning ? $"{disasterType} in progress..." : "Test Hail";
-        }
+        return isAvailable;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void SetDisasterButtons(bool interactable, DisasterType disasterType)
     {
-        
+        for (int i = 0; i < disasterButtons.Length; i++)
+        {
+            disasterButtons[i].interactable = interactable;
+            disasterLabels[i].text = interactable
+                ? disasterNames[i]
+                : i == (int)disasterType ? $"{disasterNames[i]}..." : disasterNames[i];
+        }
     }
 }

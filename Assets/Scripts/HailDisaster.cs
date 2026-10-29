@@ -6,7 +6,8 @@ public class HailDisaster : MonoBehaviour
     [SerializeField] private float spawnWidth = 10f;
     [SerializeField] private float spawnHeight = 5f;
     [SerializeField] private float spawnInterval = 0.15f;
-    [SerializeField] private float fallSpeed = 5f;
+    [SerializeField] private float fallSpeed = 1.5f;
+    [SerializeField] private float hailstoneSize = 0.8f;
 
     private Coroutine hailRoutine;
     private static Sprite hailSprite;
@@ -37,7 +38,7 @@ public class HailDisaster : MonoBehaviour
                 Random.Range(-spawnWidth / 2f, spawnWidth / 2f),
                 spawnHeight,
                 0f);
-            hailstone.transform.localScale = Vector3.one * 0.16f;
+            hailstone.transform.localScale = Vector3.one * hailstoneSize;
 
             var renderer = hailstone.AddComponent<SpriteRenderer>();
             renderer.sprite = GetHailSprite();
@@ -46,6 +47,7 @@ public class HailDisaster : MonoBehaviour
 
             hailstone.AddComponent<CircleCollider2D>();
             var body = hailstone.AddComponent<Rigidbody2D>();
+            body.mass = 0.5f;
             body.linearVelocity = Vector2.down * fallSpeed;
 
             Destroy(hailstone, 5f);

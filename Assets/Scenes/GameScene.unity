@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 209113937}
   - component: {fileID: 209113938}
   - component: {fileID: 209113939}
+  - component: {fileID: 209113940}
   m_Layer: 0
   m_Name: DisasterManager
   m_TagString: Untagged
@@ -165,9 +166,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DisasterManager
   earthquake: {fileID: 1083339454}
+  windDisaster: {fileID: 209113940}
   hailDisaster: {fileID: 209113939}
-  hailButton: {fileID: 374794669}
-  hailButtonLabel: {fileID: 810690836}
+  disasterButton: {fileID: 374794669}
   duration: 30
 --- !u!114 &209113939
 MonoBehaviour:
@@ -184,7 +185,22 @@ MonoBehaviour:
   spawnWidth: 10
   spawnHeight: 5
   spawnInterval: 0.15
-  fallSpeed: 5
+  fallSpeed: 1.5
+  hailstoneSize: 0.8
+--- !u!114 &209113940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 209113936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ec52f952166f415ab9814166b65a29f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::WindDisaster
+  blocks: []
+  windForce: 5
 --- !u!1 &374794667
 GameObject:
   m_ObjectHideFlags: 0
@@ -267,19 +283,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 374794670}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 209113938}
-        m_TargetAssemblyTypeName: DisasterManager, Assembly-CSharp
-        m_MethodName: StartHailDisaster
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &374794670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -781,7 +785,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Test Hail
+  m_text: Earthquake
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
