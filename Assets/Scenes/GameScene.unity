@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 209113937}
   - component: {fileID: 209113938}
+  - component: {fileID: 209113939}
   m_Layer: 0
   m_Name: DisasterManager
   m_TagString: Untagged
@@ -164,7 +165,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DisasterManager
   earthquake: {fileID: 1083339454}
+  hailDisaster: {fileID: 209113939}
+  hailButton: {fileID: 374794669}
+  hailButtonLabel: {fileID: 810690836}
   duration: 30
+--- !u!114 &209113939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 209113936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eaed8c175a24d5f8ee61a798fc4102c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HailDisaster
+  spawnWidth: 10
+  spawnHeight: 5
+  spawnInterval: 0.15
+  fallSpeed: 5
 --- !u!1 &374794667
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,7 +270,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 209113938}
         m_TargetAssemblyTypeName: DisasterManager, Assembly-CSharp
-        m_MethodName: NaturalDisasterBegin
+        m_MethodName: StartHailDisaster
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -761,7 +781,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Start
+  m_text: Test Hail
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
