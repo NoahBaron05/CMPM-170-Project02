@@ -16,12 +16,18 @@ public class BlockMovement : MonoBehaviour
     private bool isRotating;
 
     Rigidbody2D rb;
+    private Vector2 originalPosition;
+    private float originalRotation;
+    private float originalGravityScale;
 
     private void Start()
     {
         clickAction = InputSystem.actions.FindAction("ClickBlock");
         rotateAction = InputSystem.actions.FindAction("Rotate");
         rb = GetComponent<Rigidbody2D>();
+        originalPosition = rb.position;
+        originalRotation = rb.rotation;
+        originalGravityScale = rb.gravityScale;
     }
 
     private void Update()
@@ -87,5 +93,20 @@ public class BlockMovement : MonoBehaviour
             rb.rotation += -rotateValue * rotateSpeed;
             rb.linearVelocity = Vector3.zero;
         }
+    }
+
+
+    public void ResetBlock()
+    {
+    isDragging = false;
+    isRotating = false;
+
+    rb.linearVelocity = Vector2.zero;
+    rb.angularVelocity = 0f;
+
+    rb.position = originalPosition;
+    rb.rotation = originalRotation;
+
+    rb.gravityScale = originalGravityScale;
     }
 }
