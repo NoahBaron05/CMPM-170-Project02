@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
 
 public class DisasterManager : MonoBehaviour
 {
@@ -11,71 +11,70 @@ public class DisasterManager : MonoBehaviour
     [SerializeField] private Earthquake earthquake;
     [SerializeField] private WindDisaster windDisaster;
     [SerializeField] private HailDisaster hailDisaster;
-    [SerializeField] private Button disasterButton;
 
-    [SerializeField] private float duration;
+    [Header("Gameplay UI")]
+    [SerializeField] private Button earthquakeButton;
+    [SerializeField] private Button windButton;
+    [SerializeField] private Button hailButton;
+    [SerializeField] private GameObject gameplayPanel;
+
+    [Header("Main Menu UI")]
+    [SerializeField] private GameObject mainMenuPanel;
+    [SerializeField] private Button playButton;
+    [SerializeField] private Button rulesButton;
+
+    [Header("Rules UI")]
+    [SerializeField] private GameObject rulesPanel;
+    [SerializeField] private Button backButton;
+
+    [Header("Game End UI")]
+    [SerializeField] private GameObject gameEndPanel;
+    [SerializeField] private Button replayButton;
+
+    [SerializeField] private float duration = 30f;
+
     private bool isDisasterRunning;
+    private bool hasStarted;
     private Button[] disasterButtons;
-    private TMP_Text[] disasterLabels;
-    private readonly string[] disasterNames = { "Earthquake", "Wind", "Hail" };
 
-    public void Awake()
+    private void Awake()
     {
-        if (instance != null && instance != this)
-        {
-            Destroy(gameObject);
-        }
-        else
-        {
-            instance = this;
-        }
+        Time.timeScale = 1f;
+        instance = this;
     }
 
     private void Start()
     {
-        if (disasterButton == null)
+        if (!HasAllUIReferences())
         {
-            Debug.LogError("Disaster UI could not start because no button is assigned.");
+            Debug.LogError("Game UI references are missing. Assign the panels and buttons in the Inspector.");
             return;
         }
 
-        disasterButtons = new Button[3];
-        disasterLabels = new TMP_Text[3];
-        disasterButtons[0] = disasterButton;
+        disasterButtons = new[] { earthquakeButton, windButton, hailButton };
+        earthquakeButton.onClick.AddListener(() => StartSelectedDisaster(DisasterType.Earthquake));
+        windButton.onClick.AddListener(() => StartSelectedDisaster(DisasterType.Wind));
+        hailButton.onClick.AddListener(() => StartSelectedDisaster(DisasterType.Hail));
+        playButton.onClick.AddListener(StartGame);
+        rulesButton.onClick.AddListener(ShowRules);
+        backButton.onClick.AddListener(ShowMainMenu);
+        replayButton.onClick.AddListener(RestartScene);
 
-        for (int i = 1; i < disasterButtons.Length; i++)
-        {
-            disasterButtons[i] = Instantiate(disasterButton, disasterButton.transform.parent, false);
-        }
+        SetDisasterButtons(false);
+        ShowMainMenu();
+    }
 
-        for (int i = 0; i < disasterButtons.Length; i++)
-        {
-            Button button = disasterButtons[i];
-            button.name = $"{disasterNames[i]} Button";
-            RectTransform rect = button.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(20f, -20f - i * 45f);
-            rect.sizeDelta = new Vector2(160f, 38f);
-
-            TMP_Text label = button.GetComponentInChildren<TMP_Text>();
-            if (label == null)
-            {
-                Debug.LogError("Disaster UI button is missing its TextMeshPro label.");
-                return;
-            }
-
-            disasterLabels[i] = label;
-            label.text = disasterNames[i];
-            int buttonIndex = i;
-            button.onClick.AddListener(() => StartSelectedDisaster((DisasterType)buttonIndex));
-        }
+    private bool HasAllUIReferences()
+    {
+        return earthquakeButton != null && windButton != null && hailButton != null &&
+               gameplayPanel != null && mainMenuPanel != null && playButton != null &&
+               rulesButton != null && rulesPanel != null && backButton != null &&
+               gameEndPanel != null && replayButton != null;
     }
 
     private void StartSelectedDisaster(DisasterType disasterType)
     {
-        if (!isDisasterRunning)
+        if (hasStarted && !isDisasterRunning)
         {
             StartCoroutine(StartDisaster(disasterType));
         }
@@ -86,20 +85,17 @@ public class DisasterManager : MonoBehaviour
         if (!HasDisaster(disasterType)) yield break;
 
         isDisasterRunning = true;
-        SetDisasterButtons(false, disasterType);
+        SetDisasterButtons(false);
 
         switch (disasterType)
         {
             case DisasterType.Earthquake:
-                Debug.Log("Earthquake disaster started!");
                 earthquake.StartEarthquake();
                 break;
             case DisasterType.Wind:
-                Debug.Log("Wind disaster started!");
                 windDisaster.StartWind();
                 break;
             case DisasterType.Hail:
-                Debug.Log("Hail disaster started!");
                 hailDisaster.StartHail();
                 break;
         }
@@ -120,7 +116,10 @@ public class DisasterManager : MonoBehaviour
         }
 
         isDisasterRunning = false;
-        SetDisasterButtons(true, disasterType);
+        gameplayPanel.SetActive(false);
+        SetBlockMovement(false);
+        Time.timeScale = 0f;
+        gameEndPanel.SetActive(true);
     }
 
     private bool HasDisaster(DisasterType disasterType)
@@ -141,14 +140,56 @@ public class DisasterManager : MonoBehaviour
         return isAvailable;
     }
 
-    private void SetDisasterButtons(bool interactable, DisasterType disasterType)
+    private void SetDisasterButtons(bool interactable)
     {
-        for (int i = 0; i < disasterButtons.Length; i++)
+        if (disasterButtons == null) return;
+
+        foreach (Button button in disasterButtons)
         {
-            disasterButtons[i].interactable = interactable;
-            disasterLabels[i].text = interactable
-                ? disasterNames[i]
-                : i == (int)disasterType ? $"{disasterNames[i]}..." : disasterNames[i];
+            button.interactable = interactable;
+        }
+    }
+
+    private void ShowMainMenu()
+    {
+        hasStarted = false;
+        Time.timeScale = 0f;
+        SetBlockMovement(false);
+        mainMenuPanel.SetActive(true);
+        rulesPanel.SetActive(false);
+        gameEndPanel.SetActive(false);
+        gameplayPanel.SetActive(false);
+    }
+
+    private void ShowRules()
+    {
+        mainMenuPanel.SetActive(false);
+        rulesPanel.SetActive(true);
+    }
+
+    private void StartGame()
+    {
+        hasStarted = true;
+        Time.timeScale = 1f;
+        SetBlockMovement(true);
+        mainMenuPanel.SetActive(false);
+        rulesPanel.SetActive(false);
+        gameEndPanel.SetActive(false);
+        gameplayPanel.SetActive(true);
+        SetDisasterButtons(true);
+    }
+
+    private void RestartScene()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void SetBlockMovement(bool enabled)
+    {
+        foreach (BlockMovement blockMovement in FindObjectsByType<BlockMovement>())
+        {
+            blockMovement.enabled = enabled;
         }
     }
 }
